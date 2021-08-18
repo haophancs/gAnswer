@@ -39,7 +39,7 @@ public class Globals {
 	public static int evaluationMethod = 2; 
 	
 	public static String localPath = "./././";
-	public static String QueryEngineIP = "dbpedia16.gstore-pku.com";	// Notice, PORT number is in the evaluation function.
+	public static String QueryEngineIP = "localhost";	// Notice, PORT number is in the evaluation function.
 	public static int QueryEnginePort = 80;
 	
 	public static void init () 

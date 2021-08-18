@@ -430,7 +430,7 @@ public class GstoreConnector {
 
     public static void main(String[] args) {
         // initialize the GStore server's IP address and port.
-        GstoreConnector gc = new GstoreConnector("dbpedia16.gstore-pku.com", 80);
+        GstoreConnector gc = new GstoreConnector("localhost", 9000);
 
         // build a new database by a RDF file.
         // note that the relative path is related to gserver.
