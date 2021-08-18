@@ -49,7 +49,7 @@ public class DBpediaLookup {
 			slist.add(entMentionDict.get(searchString));
 		else
 			slist = lookForEntityNames(searchString, qlog);
-		
+		System.out.println(slist)
 		if (slist.size() == 0 && searchString.contains(". "))		
 			slist.addAll(lookForEntityNames(searchString.replaceAll(". ", "."), qlog));		
 		
