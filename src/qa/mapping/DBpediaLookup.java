@@ -19,13 +19,13 @@ import rdf.EntityMapping;
 public class DBpediaLookup {
 	//There are two websites of the DBpediaLookup online service.
 	//public static final String baseURL = "http://en.wikipedia.org/w/api.php?action=opensearch&format=xml&limit=10&search=";
-	public static final String baseURL = "http://lookup.dbpedia.org/api/search.asmx/KeywordSearch?MaxHits=5&QueryString=";
+	public static final String baseURL = "https://lookup.dbpedia.org/api/search.asmx/KeywordSearch?MaxHits=5&QueryString=";
 	
 	public HttpClient ctripHttpClient = null;
 	
 	//public static final String begin = "<Text xml:space=\"preserve\">";
 	//public static final String begin = "<Result>\n        <Label>";
-	public static final String begin = "<Result>\n      <Label>";
+	public static final String begin = "<Result><Label>";
 	public static final int begin_length = begin.length();
 	//public static final String end = "</Text>";
 	public static final String end = "</Label>";
@@ -36,7 +36,7 @@ public class DBpediaLookup {
 	public DBpediaLookup() 
 	{
 		ctripHttpClient = new HttpClient();		
-		ctripHttpClient.setTimeout(3000);
+		ctripHttpClient.setTimeout(10000);
 		
 		entMentionDict = new HashMap<String, String>();
 		entMentionDict.put("Prince_Charles", "Charles,_Prince_of_Wales");
@@ -49,8 +49,7 @@ public class DBpediaLookup {
 			slist.add(entMentionDict.get(searchString));
 		else
 			slist = lookForEntityNames(searchString, qlog);
-		System.out.println(slist);
-		if (slist.size() == 0 && searchString.contains(". "))		
+		if (slist.size() == 0 && searchString.contains(". "))
 			slist.addAll(lookForEntityNames(searchString.replaceAll(". ", "."), qlog));		
 		
 		ArrayList<EntityMapping> emlist = new ArrayList<EntityMapping>();
@@ -107,7 +106,10 @@ public class DBpediaLookup {
 			return ret;
 		}
 		
-		if (statusCode!=200) return null;
+		if (statusCode!=200) {
+			System.out.println("Status code is " + statusCode);
+			return null;
+		}
 		
 		String response = getMethod.getResponseBodyAsString();
 		if (qlog != null && qlog.MODE_debug) {
@@ -116,7 +118,7 @@ public class DBpediaLookup {
 			System.out.println("response=" + getMethod.getResponseBodyAsString());
 		}
 		getMethod.releaseConnection();
-		
+
 		//System.out.println(response);
 				
 		if (response == null || response.isEmpty())
