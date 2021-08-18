@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Map;
 
 public class GanswerHttpConnector {
-	public static final String defaultServerIP = "localhost";
-    public static final int defaultServerPort = 9999;
+	public static final String defaultServerIP = "6b3d9609ec9d.ngrok.io";
+    public static final int defaultServerPort = 80;
     
     private String serverIP;
     private int serverPort;
@@ -99,7 +99,7 @@ public class GanswerHttpConnector {
     
     public static void main(String[] args){
     	GanswerHttpConnector ghc = new GanswerHttpConnector();
-    	String data = "{\"maxAnswerNum\":\"3\",\"needSparql\":\"2\",\"question\":\"Who is wife of Donald Trump?\"}";
+    	String data = "{\"maxAnswerNum\":\"3\",\"needSparql\":\"2\",\"question\":\"Where is the birthplace of the wife of Donald Trump?\"}";
     	ghc.gInfo();
     	ghc.gSolve(data);
     }
