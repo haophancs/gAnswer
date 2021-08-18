@@ -16,7 +16,7 @@ public class Main {
 		SearchInEntityFragments sf = new SearchInEntityFragments();
 		EntityFragmentDict  efd = new EntityFragmentDict();
 		EntityFragmentFields eff = null;
-		Globals.localPath = "D:/husen/gAnswer/";
+		Globals.localPath = "/home/haophancs/Projects/gAnswer";
 		Scanner sc = new Scanner(System.in);
 		System.out.print("input name: ");
 		
