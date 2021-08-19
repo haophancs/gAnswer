@@ -85,9 +85,7 @@ public class GanswerHandler extends AbstractHandler{
 	        int idx;
 			
 			//step2 construct response
-			JSONObject resobj = new JSONObject();
-			resobj.put("status", "200");
-			resobj.put("question", question);
+			JSONObject ansobj = new JSONObject();
 			JSONObject tmpobj = new JSONObject();
 			if(needAnswer > 0){
 				if(qlog!=null && qlog.rankedSparqls.size()!=0){
@@ -125,10 +123,12 @@ public class GanswerHandler extends AbstractHandler{
 					for(String var : qlog.sparql.variables){
 						vararr.put(var);
 					}
-					resobj.put("vars", vararr);
+					JSONObject headobj = new JSONObject();
+					headobj.put("vars", vararr);
+					ansobj.put("head", headobj);
 					
 					//adding answers to result json
-					JSONArray ansobj = new JSONArray();
+					JSONArray resultobj = new JSONArray();
 					JSONObject bindingobj;
 					System.out.println(qlog.match.answersNum);
 					for(int i=0;i<qlog.match.answersNum;i++){
@@ -139,23 +139,20 @@ public class GanswerHandler extends AbstractHandler{
 							String ansRiv = qlog.match.answers[i][j].substring(qlog.match.answers[i][j].indexOf(":")+1);
 							if(ansRiv.startsWith("<")) {
 								bidobj.put("type", "uri");
-								ansRiv = ansRiv.substring(1);
-								if(ansRiv.endsWith(">")) {
-									ansRiv = ansRiv.substring(0, ansRiv.length() - 1);
-								}
+								ansRiv = ansRiv.substring(1, ansRiv.length() - 1);
+								bidobj.put("value", "http://dbpedia.org/resource/" + ansRiv);
 							}
 							else
 								bidobj.put("type", "literal");
-							bidobj.put("value", "http://dbpedia.org/resource/" + ansRiv);
 							System.out.println(qlog.match.answers[i][j]);
 							j += 1;
 							bindingobj.put(var, bidobj);
 						}
-						ansobj.put(bindingobj);
+						resultobj.put(bindingobj);
 					}
-					tmpobj.put("bindings", ansobj);
+					tmpobj.put("bindings", resultobj);
 				}
-				resobj.put("results", tmpobj);
+				ansobj.put("results", tmpobj);
 			}
 			if(needSparql>0){
 				JSONArray spqarr = new JSONArray();
@@ -164,10 +161,22 @@ public class GanswerHandler extends AbstractHandler{
 					if(qlog.sparql.toStringForGStore2().compareTo(qlog.rankedSparqls.get(idx).toStringForGStore2()) != 0)
 						spqarr.put(qlog.rankedSparqls.get(idx).toStringForGStore2());
 				}
-				resobj.put("sparql", spqarr);
+				ansobj.put("sparql", spqarr);
 			} 
-	        baseRequest.setHandled(true);  
-	        response.getWriter().println(resobj.toString());
+	        baseRequest.setHandled(true);
+			JSONArray ansarr = new JSONArray();
+			ansarr.put(ansobj.toString());
+
+			JSONObject quobj = new JSONObject();
+			quobj.put("string", question);
+			quobj.put("answers", ansarr);
+			JSONArray quarr = new JSONArray();
+			quarr.put(quobj.toString());
+
+			JSONObject resobj = new JSONObject();
+			resobj.put("questions", quarr);
+			resobj.put("status", 200);
+			response.getWriter().println(ansobj.toString());
 		}
 		catch(Exception e){
 			if(e instanceof IOException){
