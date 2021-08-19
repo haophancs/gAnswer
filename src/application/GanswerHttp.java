@@ -51,9 +51,9 @@ public class GanswerHttp {
         Server server = new Server(defaultPort);  
         
         //step 2: attach gAnswer function handler to the server
-        ContextHandler contextGS = new ContextHandler("/gSolve");
+        ContextHandler contextGS = new ContextHandler("/gsolve");
         contextGS.setHandler(new GanswerHandler());
-        ContextHandler contextGI = new ContextHandler("/gInfo");
+        ContextHandler contextGI = new ContextHandler("/ginfo");
         contextGI.setHandler(new GinfoHandler());
         ContextHandlerCollection contexts = new ContextHandlerCollection();
         contexts.setHandlers(new Handler[] {contextGS, contextGI});

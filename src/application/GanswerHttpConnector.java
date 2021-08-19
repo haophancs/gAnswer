@@ -85,14 +85,14 @@ public class GanswerHttpConnector {
     
     public String gSolve(String data){
     	String param = data;
-    	String rst = sendGet(param,"/gSolve");
+    	String rst = sendGet(param,"/gsolve");
     	System.out.println(rst);
     	return rst;
     }
     
     public String gInfo(){
     	String param = "";
-    	String rst = sendGet(param,"/gInfo");
+    	String rst = sendGet(param,"/ginfo");
     	System.out.println(rst);
     	return rst;
     }
