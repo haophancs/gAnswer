@@ -99,7 +99,7 @@ public class GanswerHttpConnector {
     
     public static void main(String[] args){
     	GanswerHttpConnector ghc = new GanswerHttpConnector();
-    	String data = "{\"query\":\"Where was Donald Trump born?\", \"kb\": \"dbpedia16\"}";
+    	String data = "{\"question\":\"Is Donald Trump president of America?\", \"kb\": \"dbpedia16\"}";
     	ghc.gInfo();
     	ghc.gSolve(data);
     }

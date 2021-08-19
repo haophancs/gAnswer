@@ -32,52 +32,60 @@ public class GanswerHandler extends AbstractHandler{
 	}
 
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
-			throws IOException, ServletException {
+            throws IOException, ServletException {
 		String question = "";
+		String kb = "dbpedia";
 		QueryLogger qlog = null;
 		try{
-			response.setContentType("text/html;charset=utf-8");
-			response.setStatus(HttpServletResponse.SC_OK);
-			//step1: parsing input json
-			String data = request.getParameter("data");
-			data = data.replace("%22","\"");
-			JSONObject jsonobj = new JSONObject();
-			int needAnswer = 0;
-			int needSparql = 1;
-			question = "Something wrong if you see this.";
-			jsonobj = new JSONObject(data);
-			question = jsonobj.getString("question");
-			if(jsonobj.isNull("maxAnswerNum")){
+			response.setContentType("application/json");
+	        response.setStatus(HttpServletResponse.SC_OK);
+	        //step1: parsing input json
+	        int needAnswer = 0;
+	        int needSparql = 1;
+	        question = request.getParameter("query");
+
+			if(request.getParameterMap().containsKey("kb")) {
+				kb = request.getParameter("kb");
+				System.out.println(kb);
+				if (!kb.equals("dbpedia")) {
+					try {
+						baseRequest.setHandled(true);
+						response.getWriter().println(errorHandle("500", "InvalidKBException: the KB you input is invalid, please check", kb, qlog));
+					} catch (Exception e1) {
+					}
+					return;
+				}
+			}
+
+			if(!request.getParameterMap().containsKey("maxAnswerNum")){
 				needAnswer = GanswerHttp.maxAnswerNum;
 			}
 			else{
-				needAnswer = jsonobj.getInt("maxAnswerNum");
+				needAnswer = Integer.parseInt(request.getParameter("maxAnswerNum"));
 			}
-			if(jsonobj.isNull("maxSparqlNum")){
+			if(!request.getParameterMap().containsKey("maxSparqlNum")){
 				needSparql = GanswerHttp.maxSparqlNum;
 			}else{
-				needSparql = jsonobj.getInt("maxSparqlNum");
+				needSparql = Integer.parseInt(request.getParameter("maxSparqlNum"));
 			}
 			Globals.MaxAnswerNum = needAnswer;
 
-			//step2 run GAnswer Logic
-			String input = question;
-			GAnswer ga = new GAnswer();
-			qlog = ga.getSparqlList(input);
-			if(qlog == null || qlog.rankedSparqls == null){
+	        //step2 run GAnswer Logic
+	        String input = question;
+	        GAnswer ga = new GAnswer();
+	        qlog = ga.getSparqlList(input);
+	        if(qlog == null || qlog.rankedSparqls == null){
 				try {
 					baseRequest.setHandled(true);
 					response.getWriter().println(errorHandle("500","InvalidQuestionException: the question you input is invalid, please check",question,qlog));
 				} catch (Exception e1) {
 				}
-				return;
-			}
-			int idx;
+	        	return;
+	        }
+	        int idx;
 
 			//step2 construct response
-			JSONObject resobj = new JSONObject();
-			resobj.put("status", "200");
-			resobj.put("question",jsonobj.getString("question"));
+			JSONObject ansobj = new JSONObject();
 			JSONObject tmpobj = new JSONObject();
 			if(needAnswer > 0){
 				if(qlog!=null && qlog.rankedSparqls.size()!=0){
@@ -115,10 +123,12 @@ public class GanswerHandler extends AbstractHandler{
 					for(String var : qlog.sparql.variables){
 						vararr.put(var);
 					}
-					resobj.put("vars", vararr);
+					JSONObject headobj = new JSONObject();
+					headobj.put("vars", vararr);
+					ansobj.put("head", headobj);
 
 					//adding answers to result json
-					JSONArray ansobj = new JSONArray();
+					JSONArray resultobj = new JSONArray();
 					JSONObject bindingobj;
 					System.out.println(qlog.match.answersNum);
 					for(int i=0;i<qlog.match.answersNum;i++){
@@ -127,20 +137,24 @@ public class GanswerHandler extends AbstractHandler{
 						for(String var:qlog.sparql.variables){
 							JSONObject bidobj = new JSONObject();
 							String ansRiv = qlog.match.answers[i][j].substring(qlog.match.answers[i][j].indexOf(":")+1);
-							bidobj.put("value", ansRiv);
-							if(ansRiv.startsWith("<"))
+							if(ansRiv.startsWith("<")) {
 								bidobj.put("type", "uri");
-							else
+								ansRiv = ansRiv.substring(1, ansRiv.length() - 1);
+								bidobj.put("value", "http://dbpedia.org/resource/" + ansRiv);
+							}
+							else {
 								bidobj.put("type", "literal");
+								bidobj.put("value", ansRiv);
+							}
 							System.out.println(qlog.match.answers[i][j]);
 							j += 1;
 							bindingobj.put(var, bidobj);
 						}
-						ansobj.put(bindingobj);
+						resultobj.put(bindingobj);
 					}
-					tmpobj.put("bindings", ansobj);
+					tmpobj.put("bindings", resultobj);
 				}
-				resobj.put("results", tmpobj);
+				ansobj.put("results", tmpobj);
 			}
 			if(needSparql>0){
 				JSONArray spqarr = new JSONArray();
@@ -149,9 +163,21 @@ public class GanswerHandler extends AbstractHandler{
 					if(qlog.sparql.toStringForGStore2().compareTo(qlog.rankedSparqls.get(idx).toStringForGStore2()) != 0)
 						spqarr.put(qlog.rankedSparqls.get(idx).toStringForGStore2());
 				}
-				resobj.put("sparql", spqarr);
+				ansobj.put("sparql", spqarr);
 			}
-			baseRequest.setHandled(true);
+	        baseRequest.setHandled(true);
+			JSONArray ansarr = new JSONArray();
+			ansarr.put(ansobj);
+
+			JSONObject quobj = new JSONObject();
+			quobj.put("string", question);
+			quobj.put("answers", ansarr);
+			JSONArray quarr = new JSONArray();
+			quarr.put(quobj);
+
+			JSONObject resobj = new JSONObject();
+			resobj.put("questions", quarr);
+			resobj.put("status", 200);
 			response.getWriter().println(resobj.toString());
 		}
 		catch(Exception e){
@@ -184,5 +210,5 @@ public class GanswerHandler extends AbstractHandler{
 				}
 			}
 		}
-	}
+    }
 }
