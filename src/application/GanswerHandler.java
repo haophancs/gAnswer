@@ -1,14 +1,14 @@
 package application;
-import java.io.IOException;  
+import java.io.IOException;
 
-import javax.servlet.ServletException;  
-import javax.servlet.http.HttpServletRequest;  
-import javax.servlet.http.HttpServletResponse;  
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import log.QueryLogger;
 
 import org.json.*;
-import org.eclipse.jetty.server.Request;  
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
 import rdf.Sparql;
@@ -30,62 +30,54 @@ public class GanswerHandler extends AbstractHandler{
 		}
 		return exobj.toString();
 	}
-	
-	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)  
-            throws IOException, ServletException {
+
+	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+			throws IOException, ServletException {
 		String question = "";
-		String kb = "dbpedia16";
 		QueryLogger qlog = null;
 		try{
-			response.setContentType("application/json");
-	        response.setStatus(HttpServletResponse.SC_OK);
-	        //step1: parsing input json
-	        int needAnswer = 0;
-	        int needSparql = 1;
-	        question = request.getParameter("query");
-
-			if(request.getParameterMap().containsKey("kb")) {
-				kb = request.getParameter("kb");
-				System.out.println(kb);
-				if (!kb.equals("dbpedia16")) {
-					try {
-						baseRequest.setHandled(true);
-						response.getWriter().println(errorHandle("500", "InvalidKBException: the KB you input is invalid, please check", kb, qlog));
-					} catch (Exception e1) {
-					}
-					return;
-				}
-			}
-
-			if(!request.getParameterMap().containsKey("maxAnswerNum")){
+			response.setContentType("text/html;charset=utf-8");
+			response.setStatus(HttpServletResponse.SC_OK);
+			//step1: parsing input json
+			String data = request.getParameter("data");
+			data = data.replace("%22","\"");
+			JSONObject jsonobj = new JSONObject();
+			int needAnswer = 0;
+			int needSparql = 1;
+			question = "Something wrong if you see this.";
+			jsonobj = new JSONObject(data);
+			question = jsonobj.getString("question");
+			if(jsonobj.isNull("maxAnswerNum")){
 				needAnswer = GanswerHttp.maxAnswerNum;
 			}
 			else{
-				needAnswer = Integer.parseInt(request.getParameter("maxAnswerNum"));
+				needAnswer = jsonobj.getInt("maxAnswerNum");
 			}
-			if(!request.getParameterMap().containsKey("maxSparqlNum")){
+			if(jsonobj.isNull("maxSparqlNum")){
 				needSparql = GanswerHttp.maxSparqlNum;
 			}else{
-				needSparql = Integer.parseInt(request.getParameter("maxSparqlNum"));
+				needSparql = jsonobj.getInt("maxSparqlNum");
 			}
 			Globals.MaxAnswerNum = needAnswer;
-	        
-	        //step2 run GAnswer Logic
-	        String input = question;
-	        GAnswer ga = new GAnswer();
-	        qlog = ga.getSparqlList(input);
-	        if(qlog == null || qlog.rankedSparqls == null){
+
+			//step2 run GAnswer Logic
+			String input = question;
+			GAnswer ga = new GAnswer();
+			qlog = ga.getSparqlList(input);
+			if(qlog == null || qlog.rankedSparqls == null){
 				try {
 					baseRequest.setHandled(true);
 					response.getWriter().println(errorHandle("500","InvalidQuestionException: the question you input is invalid, please check",question,qlog));
 				} catch (Exception e1) {
 				}
-	        	return;
-	        }
-	        int idx;
-			
+				return;
+			}
+			int idx;
+
 			//step2 construct response
-			JSONObject ansobj = new JSONObject();
+			JSONObject resobj = new JSONObject();
+			resobj.put("status", "200");
+			resobj.put("question",jsonobj.getString("question"));
 			JSONObject tmpobj = new JSONObject();
 			if(needAnswer > 0){
 				if(qlog!=null && qlog.rankedSparqls.size()!=0){
@@ -117,18 +109,16 @@ public class GanswerHandler extends AbstractHandler{
 					if(qlog.sparql==null)
 						qlog.sparql = qlog.rankedSparqls.get(0);
 					qlog.reviseAnswers();
-					
+
 					//adding variables to result json
 					JSONArray vararr = new JSONArray();
 					for(String var : qlog.sparql.variables){
 						vararr.put(var);
 					}
-					JSONObject headobj = new JSONObject();
-					headobj.put("vars", vararr);
-					ansobj.put("head", headobj);
-					
+					resobj.put("vars", vararr);
+
 					//adding answers to result json
-					JSONArray resultobj = new JSONArray();
+					JSONArray ansobj = new JSONArray();
 					JSONObject bindingobj;
 					System.out.println(qlog.match.answersNum);
 					for(int i=0;i<qlog.match.answersNum;i++){
@@ -137,24 +127,20 @@ public class GanswerHandler extends AbstractHandler{
 						for(String var:qlog.sparql.variables){
 							JSONObject bidobj = new JSONObject();
 							String ansRiv = qlog.match.answers[i][j].substring(qlog.match.answers[i][j].indexOf(":")+1);
-							if(ansRiv.startsWith("<")) {
+							bidobj.put("value", ansRiv);
+							if(ansRiv.startsWith("<"))
 								bidobj.put("type", "uri");
-								ansRiv = ansRiv.substring(1, ansRiv.length() - 1);
-								bidobj.put("value", "http://dbpedia.org/resource/" + ansRiv);
-							}
-							else {
+							else
 								bidobj.put("type", "literal");
-								bidobj.put("value", ansRiv);
-							}
 							System.out.println(qlog.match.answers[i][j]);
 							j += 1;
 							bindingobj.put(var, bidobj);
 						}
-						resultobj.put(bindingobj);
+						ansobj.put(bindingobj);
 					}
-					tmpobj.put("bindings", resultobj);
+					tmpobj.put("bindings", ansobj);
 				}
-				ansobj.put("results", tmpobj);
+				resobj.put("results", tmpobj);
 			}
 			if(needSparql>0){
 				JSONArray spqarr = new JSONArray();
@@ -163,21 +149,9 @@ public class GanswerHandler extends AbstractHandler{
 					if(qlog.sparql.toStringForGStore2().compareTo(qlog.rankedSparqls.get(idx).toStringForGStore2()) != 0)
 						spqarr.put(qlog.rankedSparqls.get(idx).toStringForGStore2());
 				}
-				ansobj.put("sparql", spqarr);
-			} 
-	        baseRequest.setHandled(true);
-			JSONArray ansarr = new JSONArray();
-			ansarr.put(ansobj);
-
-			JSONObject quobj = new JSONObject();
-			quobj.put("string", question);
-			quobj.put("answers", ansarr);
-			JSONArray quarr = new JSONArray();
-			quarr.put(quobj);
-
-			JSONObject resobj = new JSONObject();
-			resobj.put("questions", quarr);
-			resobj.put("status", 200);
+				resobj.put("sparql", spqarr);
+			}
+			baseRequest.setHandled(true);
 			response.getWriter().println(resobj.toString());
 		}
 		catch(Exception e){
@@ -209,6 +183,6 @@ public class GanswerHandler extends AbstractHandler{
 				} catch (Exception e1) {
 				}
 			}
-		} 
-    }  
+		}
+	}
 }
