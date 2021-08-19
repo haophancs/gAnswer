@@ -47,7 +47,7 @@ public class GanswerHandler extends AbstractHandler{
 			if(request.getParameterMap().containsKey("kb")) {
 				kb = request.getParameter("kb");
 				System.out.println(kb);
-				if (kb != "dbpedia16") {
+				if (!kb.equals("dbpedia16")) {
 					try {
 						baseRequest.setHandled(true);
 						response.getWriter().println(errorHandle("500", "InvalidKBException: the KB you input is invalid, please check", kb, qlog));
@@ -137,11 +137,16 @@ public class GanswerHandler extends AbstractHandler{
 						for(String var:qlog.sparql.variables){
 							JSONObject bidobj = new JSONObject();
 							String ansRiv = qlog.match.answers[i][j].substring(qlog.match.answers[i][j].indexOf(":")+1);
-							bidobj.put("value", ansRiv);
-							if(ansRiv.startsWith("<"))
+							if(ansRiv.startsWith("<")) {
 								bidobj.put("type", "uri");
+								ansRiv = ansRiv.substring(1);
+								if(ansRiv.endsWith(">")) {
+									ansRiv = ansRiv.substring(0, ansRiv.length() - 1);
+								}
+							}
 							else
 								bidobj.put("type", "literal");
+							bidobj.put("value", "http://dbpedia.org/resource/" + ansRiv);
 							System.out.println(qlog.match.answers[i][j]);
 							j += 1;
 							bindingobj.put(var, bidobj);
