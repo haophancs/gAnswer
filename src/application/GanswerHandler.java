@@ -165,13 +165,13 @@ public class GanswerHandler extends AbstractHandler{
 			} 
 	        baseRequest.setHandled(true);
 			JSONArray ansarr = new JSONArray();
-			ansarr.put(ansobj.toString());
+			ansarr.put(ansobj);
 
 			JSONObject quobj = new JSONObject();
 			quobj.put("string", question);
 			quobj.put("answers", ansarr);
 			JSONArray quarr = new JSONArray();
-			quarr.put(quobj.toString());
+			quarr.put(quobj);
 
 			JSONObject resobj = new JSONObject();
 			resobj.put("questions", quarr);
