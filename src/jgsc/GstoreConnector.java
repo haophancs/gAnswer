@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class GstoreConnector {
 
-    public static final String defaultServerIP = "localhost";
+    public static final String defaultServerIP = "127.0.0.1";
     public static final int defaultServerPort = 9000;
 
     private String serverIP;
@@ -430,7 +430,7 @@ public class GstoreConnector {
 
     public static void main(String[] args) {
         // initialize the GStore server's IP address and port.
-        GstoreConnector gc = new GstoreConnector("localhost", 9000);
+        GstoreConnector gc = new GstoreConnector("127.0.0.1", 9000);
 
         // build a new database by a RDF file.
         // note that the relative path is related to gserver.

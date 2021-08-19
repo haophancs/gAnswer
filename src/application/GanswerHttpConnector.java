@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public class GanswerHttpConnector {
-	public static final String defaultServerIP = "66a297743161.ngrok.io";
+	public static final String defaultServerIP = "09014bf728af.ngrok.io";
     public static final int defaultServerPort = 80;
     
     private String serverIP;
