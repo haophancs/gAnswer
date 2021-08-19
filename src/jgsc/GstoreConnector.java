@@ -51,7 +51,9 @@ public class GstoreConnector {
             String urlNameString = url + "/" + param;
             System.out.println("request: "+urlNameString);
             URL realUrl = new URL(urlNameString);
-            URLConnection connection = realUrl.openConnection();
+            HttpURLConnection connection = (HttpURLConnection) realUrl.openConnection();
+            HttpURLConnection.setFollowRedirects(false);
+            connection.setConnectTimeout(10000);
             connection.setRequestProperty("accept", "*/*");
             connection.setRequestProperty("connection", "Keep-Alive");
 			//set agent to avoid: speed limited by server if server think the client not a browser
