@@ -36,7 +36,7 @@ public class GanswerHandler extends AbstractHandler{
 		String question = "";
 		QueryLogger qlog = null;
 		try{
-			response.setContentType("text/html;charset=utf-8");  
+			response.setContentType("application/json");
 	        response.setStatus(HttpServletResponse.SC_OK);
 	        //step1: parsing input json
 	        String data = request.getParameter("data");
@@ -46,7 +46,7 @@ public class GanswerHandler extends AbstractHandler{
 	        int needSparql = 1;
 	        question = "Something wrong if you see this.";
 			jsonobj = new JSONObject(data);
-			question = jsonobj.getString("question");
+			question = jsonobj.getString("query");
 			if(jsonobj.isNull("maxAnswerNum")){
 				needAnswer = GanswerHttp.maxAnswerNum;
 			}
