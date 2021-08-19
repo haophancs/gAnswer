@@ -142,8 +142,10 @@ public class GanswerHandler extends AbstractHandler{
 								ansRiv = ansRiv.substring(1, ansRiv.length() - 1);
 								bidobj.put("value", "http://dbpedia.org/resource/" + ansRiv);
 							}
-							else
+							else {
 								bidobj.put("type", "literal");
+								bidobj.put("value", ansRiv);
+							}
 							System.out.println(qlog.match.answers[i][j]);
 							j += 1;
 							bindingobj.put(var, bidobj);
