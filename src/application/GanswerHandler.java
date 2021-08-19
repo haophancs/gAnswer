@@ -34,29 +34,37 @@ public class GanswerHandler extends AbstractHandler{
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)  
             throws IOException, ServletException {
 		String question = "";
+		String kb = "dbpedia16";
 		QueryLogger qlog = null;
 		try{
 			response.setContentType("application/json");
 	        response.setStatus(HttpServletResponse.SC_OK);
 	        //step1: parsing input json
-	        String data = request.getParameter("data");
-	        data = data.replace("%22","\"");
-	        JSONObject jsonobj = new JSONObject();
 	        int needAnswer = 0;
 	        int needSparql = 1;
-	        question = "Something wrong if you see this.";
-			jsonobj = new JSONObject(data);
-			question = jsonobj.getString("query");
-			if(jsonobj.isNull("maxAnswerNum")){
+	        question = request.getParameter("query");
+
+			if(request.getParameterMap().containsKey("kb")) {
+				kb = request.getParameter("kb");
+				if (kb != "dbpedia16") {
+					try {
+						baseRequest.setHandled(true);
+						response.getWriter().println(errorHandle("500", "InvalidKBException: the KB you input is invalid, please check", kb, qlog));
+					} catch (Exception e1) {
+					}
+				}
+			}
+
+			if(!request.getParameterMap().containsKey("maxAnswerNum")){
 				needAnswer = GanswerHttp.maxAnswerNum;
 			}
 			else{
-				needAnswer = jsonobj.getInt("maxAnswerNum");
+				needAnswer = Integer.parseInt(request.getParameter("maxAnswerNum"));
 			}
-			if(jsonobj.isNull("maxSparqlNum")){
+			if(!request.getParameterMap().containsKey("maxSparqlNum")){
 				needSparql = GanswerHttp.maxSparqlNum;
 			}else{
-				needSparql = jsonobj.getInt("maxSparqlNum");
+				needSparql = Integer.parseInt(request.getParameter("maxSparqlNum"));
 			}
 			Globals.MaxAnswerNum = needAnswer;
 	        
@@ -77,7 +85,7 @@ public class GanswerHandler extends AbstractHandler{
 			//step2 construct response
 			JSONObject resobj = new JSONObject();
 			resobj.put("status", "200");
-			resobj.put("question",jsonobj.getString("question"));
+			resobj.put("question", question);
 			JSONObject tmpobj = new JSONObject();
 			if(needAnswer > 0){
 				if(qlog!=null && qlog.rankedSparqls.size()!=0){
