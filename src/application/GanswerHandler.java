@@ -46,12 +46,14 @@ public class GanswerHandler extends AbstractHandler{
 
 			if(request.getParameterMap().containsKey("kb")) {
 				kb = request.getParameter("kb");
+				System.out.println(kb);
 				if (kb != "dbpedia16") {
 					try {
 						baseRequest.setHandled(true);
 						response.getWriter().println(errorHandle("500", "InvalidKBException: the KB you input is invalid, please check", kb, qlog));
 					} catch (Exception e1) {
 					}
+					return;
 				}
 			}
 
