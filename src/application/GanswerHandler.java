@@ -18,33 +18,6 @@ import qa.Matches;
 
 public class GanswerHandler extends AbstractHandler{
 
-	public static boolean isDouble(String str) {
-		try {
-			Double.parseDouble(str);
-			return true;
-		} catch(NumberFormatException e){
-			return false;
-		} finally {
-			return false;
-		}
-	}
-
-	public static boolean isInt(String str) {
-		if (!isDouble(str)) {
-			return false;
-		}
-		try {
-			Double value = Double.parseDouble(str);
-			if ((value == Math.floor(value)) && !Double.isInfinite(value)) {
-				return true;
-			}
-		} catch(NumberFormatException e){
-			return false;
-		} finally {
-			return false;
-		}
-	}
-
 	public static String errorHandle(String status,String message,String question,QueryLogger qlog){
 		JSONObject exobj = new JSONObject();
 		try {
@@ -174,14 +147,10 @@ public class GanswerHandler extends AbstractHandler{
 							}
 							else {
 								bidobj.put("type", "literal");
-								ansRiv = ansRiv.replace("\"\"", "\"");
-								if (isDouble(ansRiv)) {
-									bidobj.put("value", Double.parseDouble(ansRiv));
-								} else if (isInt(ansRiv)){
-									bidobj.put("value", Integer.parseInt(ansRiv));
-								} else {
-									bidobj.put("value", ansRiv);
+								if (ansRiv.startsWith("\n") && ansRiv.endsWith("\"")) {
+									ansRiv = ansRiv.substring(1, ansRiv.length() - 1);
 								}
+								bidobj.put("value", ansRiv);
 								if (ansRiv.contains("boolean")
 										&& (ansRiv.contains("false") || ansRiv.contains("true"))
 										&& qlog.match.answersNum == 1) {
