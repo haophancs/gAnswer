@@ -88,6 +88,8 @@ public class GanswerHandler extends AbstractHandler{
 			JSONObject ansobj = new JSONObject();
 			JSONObject tmpobj = new JSONObject();
 			if(needAnswer > 0){
+				boolean isBoolean = false;
+				boolean boolAns = false;
 				if(qlog!=null && qlog.rankedSparqls.size()!=0){
 					Sparql curSpq = null;
 					Matches m = null;
@@ -145,6 +147,12 @@ public class GanswerHandler extends AbstractHandler{
 							else {
 								bidobj.put("type", "literal");
 								bidobj.put("value", ansRiv);
+								if (ansRiv.contains("boolean")
+										&& (ansRiv.contains("false") || ansRiv.contains("true"))
+										&& qlog.match.answersNum == 1) {
+									isBoolean = true;
+									boolAns = !ansRiv.contains("false");
+								}
 							}
 							System.out.println(qlog.match.answers[i][j]);
 							j += 1;
@@ -154,7 +162,12 @@ public class GanswerHandler extends AbstractHandler{
 					}
 					tmpobj.put("bindings", resultobj);
 				}
-				ansobj.put("results", tmpobj);
+				if (!isBoolean) {
+					ansobj.put("results", tmpobj);
+				} else {
+					ansobj.put("head", new JSONObject());
+					ansobj.put("boolean", boolAns);
+				}
 			}
 			if(needSparql>0){
 				JSONArray spqarr = new JSONArray();
