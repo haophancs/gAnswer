@@ -176,7 +176,7 @@ public class GanswerHandler extends AbstractHandler{
 			JSONObject resobj = new JSONObject();
 			resobj.put("questions", quarr);
 			resobj.put("status", 200);
-			response.getWriter().println(ansobj.toString());
+			response.getWriter().println(resobj.toString());
 		}
 		catch(Exception e){
 			if(e instanceof IOException){
