@@ -147,7 +147,7 @@ public class GanswerHandler extends AbstractHandler{
 							}
 							else {
 								bidobj.put("type", "literal");
-								if (ansRiv.startsWith("\n") && ansRiv.endsWith("\"")) {
+								if (ansRiv.startsWith("\"") && ansRiv.endsWith("\"")) {
 									ansRiv = ansRiv.substring(1, ansRiv.length() - 1);
 								}
 								bidobj.put("value", ansRiv);
