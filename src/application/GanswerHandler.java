@@ -187,12 +187,10 @@ public class GanswerHandler extends AbstractHandler{
 			}
 
 	        baseRequest.setHandled(true);
-			JSONArray ansarr = new JSONArray();
-			ansarr.put(ansobj);
 
 			JSONObject quobj = new JSONObject();
 			quobj.put("question", question);
-			quobj.put("answers", ansarr);
+			quobj.put("answers", ansobj);
 
 			double elaps = System.currentTimeMillis() - start_time;
 			quobj.put("elaps", elaps / 1000.);
