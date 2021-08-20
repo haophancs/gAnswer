@@ -199,7 +199,9 @@ public class GanswerHandler extends AbstractHandler{
 			JSONObject resobj = new JSONObject();
 			resobj.put("questions", quarr);
 			resobj.put("status", 200);
-			resobj.put("elaps", (System.currentTimeMillis() - start_time) / 1000);
+
+			double elaps = System.currentTimeMillis() - start_time;
+			resobj.put("elaps", elaps / 1000.);
 			response.getWriter().println(resobj.toString());
 		}
 		catch(Exception e){
