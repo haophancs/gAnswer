@@ -37,6 +37,9 @@ public class GanswerHandler extends AbstractHandler{
 		String question = "";
 		String kb = "dbpedia";
 		QueryLogger qlog = null;
+
+		long start_time = System.currentTimeMillis();
+
 		try{
 			response.setContentType("application/json");
 	        response.setStatus(HttpServletResponse.SC_OK);
@@ -182,6 +185,7 @@ public class GanswerHandler extends AbstractHandler{
 				}
 				ansobj.put("sparql", spqarr);
 			}
+
 	        baseRequest.setHandled(true);
 			JSONArray ansarr = new JSONArray();
 			ansarr.put(ansobj);
@@ -195,6 +199,7 @@ public class GanswerHandler extends AbstractHandler{
 			JSONObject resobj = new JSONObject();
 			resobj.put("questions", quarr);
 			resobj.put("status", 200);
+			resobj.put("elaps", (System.currentTimeMillis() - start_time) / 1000);
 			response.getWriter().println(resobj.toString());
 		}
 		catch(Exception e){
