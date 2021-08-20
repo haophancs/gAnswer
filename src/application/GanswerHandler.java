@@ -191,18 +191,14 @@ public class GanswerHandler extends AbstractHandler{
 			ansarr.put(ansobj);
 
 			JSONObject quobj = new JSONObject();
-			quobj.put("string", question);
+			quobj.put("question", question);
 			quobj.put("answers", ansarr);
-			JSONArray quarr = new JSONArray();
-			quarr.put(quobj);
-
-			JSONObject resobj = new JSONObject();
-			resobj.put("questions", quarr);
-			resobj.put("status", 200);
 
 			double elaps = System.currentTimeMillis() - start_time;
-			resobj.put("elaps", elaps / 1000.);
-			response.getWriter().println(resobj.toString());
+			quobj.put("elaps", elaps / 1000.);
+			quobj.put("status", 200);
+
+			response.getWriter().println(quobj.toString());
 		}
 		catch(Exception e){
 			if(e instanceof IOException){
