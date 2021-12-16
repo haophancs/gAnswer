@@ -3,7 +3,7 @@
 
 apt update \
     && apt autoclean \
-    && apt install -y tmux vim wget git unrar unzip \
+    && apt install -y tmux vim wget git unrar unzip build-essential \    
     && apt install -y python3 python3-pip \
     && apt install -y openjdk-8-jdk openjdk-8-jre \
     && apt upgrade -y
